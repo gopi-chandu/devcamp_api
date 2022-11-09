@@ -1,14 +1,23 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const logger = require("./middlewares/logger");
+const errorHandler = require("./middlewares/error");
 const morgan = require("morgan");
-// load api routes
-const bootcamps = require("./routes/bootcamp");
+const colors = require("colors");
+const connectDB = require("./config/db");
 
 // load env vars
 dotenv.config({ path: "./config/config.env" });
 
+// connect to database
+connectDB();
+
+// load api routes
+const bootcamps = require("./routes/bootcamp");
+
 const app = express();
+
+//body parser
+app.use(express.json());
 
 // app.use(logger)
 // dev logging middleware
@@ -19,6 +28,9 @@ if (process.env.NODE_ENV === "development") {
 //using routes
 app.use("/api/v1/bootcamps", bootcamps);
 
+// the order of middleware is also important , that is the error handler is used after the routes from the above raise error
+app.use(errorHandler);
+
 app.get("/", (req, res) => {
   // res.json({name: 'Gopi'});
   res.status(200).json({ success: true });
@@ -26,9 +38,18 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(
+const server = app.listen(
   PORT,
   console.log(
     `server is running in ${process.env.NODE_ENV} mode on port ${process.env.PORT}`
+      .yellow.bold
   )
 );
+
+// Global Handler
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err, promise) => {
+  console.log(`Error: ${err.message}`.red);
+  // close server and exit process
+  server.close(() => process.exit(1));
+});
