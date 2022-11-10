@@ -6,7 +6,39 @@ const asyncHandler = require("../middlewares/async");
 // @route GET /api/v1/bootcamps/
 // @access Public
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-  const bootcamps = await Bootcamp.find();
+  let query;
+
+  // copy the request query
+  let reqQuery = { ...req.query };
+
+  // list the statements to be removed
+  const removeFields = ["select"];
+
+  // remove the select word from the reqQuery
+  removeFields.forEach((param) => delete reqQuery[param]);
+
+  // convert req query to string
+  let queryStr = JSON.stringify(reqQuery);
+
+  // regular expression to replace  gt with $gt
+  queryStr = queryStr.replace(
+    /\b(gt|lt|gte|lte|in)\b/g,
+    (match) => `$${match}`
+  );
+
+  //finding resource
+  query = Bootcamp.find(JSON.parse(queryStr));
+
+  if (req.query.select) {
+    // split using ,
+    // we get an array with values
+    // join the array back into string using join operation with space
+    const fields = req.query.select.split(",").join(" ");
+    query = query.select(fields); 
+  }
+
+  // execution
+  const bootcamps = await query;
   res
     .status(200)
     .json({ success: true, count: bootcamps.length, data: bootcamps });
