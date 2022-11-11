@@ -12,7 +12,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
   let reqQuery = { ...req.query };
 
   // list the statements to be removed
-  const removeFields = ["select", "sort"];
+  const removeFields = ["select", "sort", "page", "limit"];
 
   // remove the select word from the reqQuery
   removeFields.forEach((param) => delete reqQuery[param]);
@@ -47,11 +47,43 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
     query = query.sort("-createdAt");
   }
 
+  // Pagination
+  // here parseInt 2nd argument is radix that is 10 in decimal ,default page is 1
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 25;
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+
+  const total = await Bootcamp.countDocuments();
+
+  query = query.skip(startIndex).limit(limit);
+
   // execution
   const bootcamps = await query;
-  res
-    .status(200)
-    .json({ success: true, count: bootcamps.length, data: bootcamps });
+
+  // pagination result
+  const pagination = {};
+
+  if (endIndex < total) {
+    pagination.next = {
+      page: page + 1,
+      limit: limit,
+    };
+  }
+
+  if (startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+      limit: limit,
+    };
+  }
+
+  res.status(200).json({
+    success: true,
+    count: bootcamps.length,
+    pagination: pagination,
+    data: bootcamps,
+  });
 });
 
 // @desc Get a bootcamp
