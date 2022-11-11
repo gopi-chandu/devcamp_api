@@ -12,7 +12,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
   let reqQuery = { ...req.query };
 
   // list the statements to be removed
-  const removeFields = ["select"];
+  const removeFields = ["select", "sort"];
 
   // remove the select word from the reqQuery
   removeFields.forEach((param) => delete reqQuery[param]);
@@ -29,12 +29,22 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
   //finding resource
   query = Bootcamp.find(JSON.parse(queryStr));
 
+  // Select fields
   if (req.query.select) {
     // split using ,
     // we get an array with values
     // join the array back into string using join operation with space
     const fields = req.query.select.split(",").join(" ");
-    query = query.select(fields); 
+    query = query.select(fields);
+  }
+
+  // Sort
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join(" ");
+    console.log(sortBy);
+    query = query.sort(sortBy);
+  } else {
+    query = query.sort("-createdAt");
   }
 
   // execution
