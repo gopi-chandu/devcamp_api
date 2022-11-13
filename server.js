@@ -12,7 +12,8 @@ dotenv.config({ path: "./config/config.env" });
 connectDB();
 
 // load api routes
-const bootcamps = require("./routes/bootcamp");
+const bootcamps = require("./routes/bootcamps");
+const courses = require("./routes/courses");
 
 const app = express();
 
@@ -27,6 +28,7 @@ if (process.env.NODE_ENV === "development") {
 
 //using routes
 app.use("/api/v1/bootcamps", bootcamps);
+app.use("/api/v1/courses", courses);
 
 // the order of middleware is also important , that is the error handler is used after the routes from the above raise error
 app.use(errorHandler);

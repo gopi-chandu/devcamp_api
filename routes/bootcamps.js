@@ -1,12 +1,19 @@
 const express = require("express");
-const router = express.Router();
 const {
   getBootcamp,
   getBootcamps,
   createBootcamp,
   updateBootcamp,
   deleteBootcamp,
-} = require("../controllers/bootcamp");
+} = require("../controllers/bootcamps");
+
+// include other resource routers
+const courseRouter=require('./courses')
+
+const router = express.Router();
+
+// Re-Route into other resource routers
+router.use("/:bootcampId/courses",courseRouter)
 
 router.route("/").get(getBootcamps).post(createBootcamp);
 

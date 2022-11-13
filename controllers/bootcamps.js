@@ -26,8 +26,12 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
     (match) => `$${match}`
   );
 
-  //finding resource
-  query = Bootcamp.find(JSON.parse(queryStr));
+  //finding resource - populate courses is because of the virtuals that we added in bootcamp model
+  // query = Bootcamp.find(JSON.parse(queryStr)).populate("courses");
+  query = Bootcamp.find(JSON.parse(queryStr)).populate({
+    path: 'courses',
+    select: "name description",
+  });
 
   // Select fields
   if (req.query.select) {
@@ -133,7 +137,7 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 // @route delete /api/v1/bootcamps/:id
 // @access Public
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.id);
   if (!bootcamp) {
     return next(
       new ErrorResponse(
@@ -142,5 +146,7 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
       )
     );
   }
+  // the function below will trigger the pre function in bootcamp.js
+  bootcamp.remove();
   res.status(201).json({ success: true, data: bootcamp });
 });
