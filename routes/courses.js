@@ -9,9 +9,16 @@ const {
 
 const router = express.Router({ mergeParams: true });
 
+// we bring bootcamp model to pass it to middleware
+const Course = require("../models/Course");
+const advancedResults=require('../middlewares/advancedResults');
+
 router
     .route("/")
-    .get(getCourses)
+    .get(advancedResults(Course,{
+        path: "bootcamp",
+        select: "name description",
+      }),getCourses)
     .post(addCourse);
 
     

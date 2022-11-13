@@ -1,8 +1,10 @@
+const path = require("path");
 const express = require("express");
 const dotenv = require("dotenv");
-const errorHandler = require("./middlewares/error");
 const morgan = require("morgan");
 const colors = require("colors");
+const fileupload = require("express-fileupload");
+const errorHandler = require("./middlewares/error");
 const connectDB = require("./config/db");
 
 // load env vars
@@ -25,6 +27,12 @@ app.use(express.json());
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
+// File uploading
+app.use(fileupload());
+
+//Set public folder as our static folder, to tell node that it is our static folder
+app.use(express.static(path.join(__dirname,'public')));
 
 //using routes
 app.use("/api/v1/bootcamps", bootcamps);
