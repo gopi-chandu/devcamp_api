@@ -26,7 +26,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
     // you can only decode it with the signed key only
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log(decoded);
+    console.log(decoded.id);
     req.user = await User.findById(decoded.id);
     next();
   } catch (error) {
