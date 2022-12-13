@@ -3,11 +3,16 @@ const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const colors = require("colors");
+const helmet = require("helmet");
+const xss = require("xss-clean");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+const hpp = require("hpp");
 const fileupload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middlewares/error");
 const connectDB = require("./config/db");
-
+const mongoSanitize = require("express-mongo-sanitize");
 // load env vars
 dotenv.config({ path: "./config/config.env" });
 
@@ -36,6 +41,28 @@ if (process.env.NODE_ENV === "development") {
 
 // File uploading
 app.use(fileupload());
+
+// Sanitize data
+app.use(mongoSanitize());
+
+// Helmet for headers
+app.use(helmet());
+
+// for sanitizing data - remove scripts
+app.use(xss());
+
+//Rate limiting
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 100,
+});
+app.use(limiter);
+
+// Prevent http param pollution
+app.use(hpp());
+
+// Enable CORS
+app.use(cors());
 
 //Set public folder as our static folder, to tell node that it is our static folder
 app.use(express.static(path.join(__dirname, "public")));
