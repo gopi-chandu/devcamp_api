@@ -13,15 +13,19 @@ const Bootcamp = require("../models/Bootcamp");
 // bring middleware
 const advancedResults = require("../middlewares/advancedResults");
 
-// include other resource routers
-const courseRouter = require("./courses");
 
 const router = express.Router();
 
 const { protect, authorize } = require("../middlewares/auth");
 
+// include other resource routers
+const courseRouter = require("./courses");
 // Re-Route into other resource routers
 router.use("/:bootcampId/courses", courseRouter);
+
+// Re-Route into other resource routers
+const reviewRouter = require("./reviews");
+router.use("/:bootcampId/reviews", reviewRouter);
 
 router
   .route("/:id/photo")
